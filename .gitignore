@@ -1,0 +1,27 @@
+# Build output
+.pio/
+.vscode/
+.pioenvs/
+.piolibdeps/
+
+# IDE files
+.idea/
+*.iws
+*.iml
+*.ipr
+*.sublime-*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Backup files
+*.bak
+*.backup
+
+# Environment
+.env
+.env.local

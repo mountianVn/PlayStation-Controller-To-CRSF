@@ -1,0 +1,252 @@
+Hãy đóng vai trò là kỹ sư Embedded + Full Stack có kinh nghiệm về ESP32, giao thức RC và Web UI.
+
+Tạo hoàn chỉnh dự án firmware cho ESP32 (ưu tiên ESP32-S3 nhưng có thể cấu hình ESP32-C3/ESP32 thường) với chức năng:
+
+MỤC TIÊU:
+ESP32 đọc dữ liệu từ tay cầm chơi game (PlayStation Controller) sau đó chuyển đổi thành tín hiệu điều khiển RC chuẩn:
+
+- CRSF (Crossfire)
+- SBUS
+- PPM
+
+Cho phép chọn một trong các giao thức hoặc xuất đồng thời nhiều giao thức nếu phần cứng cho phép.
+
+YÊU CẦU KẾT NỐI TAY CẦM:
+
+Hỗ trợ:
+
+- PS2 Controller
+- PS3 Controller
+- PS4 Controller
+- PS5 Controller
+
+Ưu tiên Bluetooth trước, có thể mở rộng USB nếu hỗ trợ.
+
+ESP32 phải:
+
+- tự động tìm tay cầm
+- tự động kết nối lại nếu mất kết nối
+- hiển thị trạng thái pin tay cầm
+- hiển thị cường độ tín hiệu
+- hiển thị trạng thái kết nối
+
+CHUYỂN ĐỔI KÊNH:
+
+Phải có hệ thống mapping cực kỳ linh hoạt:
+
+Ví dụ:
+
+PS joystick trái X → Channel 1
+PS joystick trái Y → Channel 2
+PS joystick phải X → Channel 3
+PS joystick phải Y → Channel 4
+
+L1 → Channel 5
+L2 → Channel 6
+R1 → Channel 7
+R2 → Channel 8
+
+Triangle → Channel 9
+Circle → Channel 10
+Square → Channel 11
+Cross → Channel 12
+
+Dpad Up → Channel 13
+Dpad Down → Channel 14
+Dpad Left → Channel 15
+Dpad Right → Channel 16
+
+Người dùng phải có thể thay đổi tùy ý:
+
+- nguồn đầu vào
+- kênh đầu ra
+- đảo chiều
+- min/max
+- midpoint
+- deadzone
+- expo
+- smoothing
+- scale %
+
+Cho phép:
+
+- copy cấu hình giữa các kênh
+- reset mặc định
+- lưu profile
+
+HỖ TRỢ KÊNH:
+
+- tối thiểu 16 kênh
+- mục tiêu 24 kênh nếu CRSF hỗ trợ
+
+WEB SERVER:
+
+ESP32 tạo Web UI nội bộ:
+
+- AP mode nếu chưa cấu hình WiFi
+- Station mode nếu đã lưu WiFi
+
+Web UI cần có:
+
+TAB Dashboard:
+- trạng thái kết nối tay cầm
+- pin tay cầm
+- RSSI
+- CPU usage
+- RAM usage
+- giao thức đang dùng
+- FPS cập nhật dữ liệu
+- latency
+- trạng thái CRSF/SBUS/PPM
+
+TAB Channel Monitor:
+Hiển thị realtime:
+
+CH1: 1500
+CH2: 1023
+CH3: 1980
+
+và thanh trượt animation.
+
+TAB Mapping:
+- kéo thả để gán input → output
+- chỉnh min/max
+- reverse
+- deadzone
+- expo
+
+TAB Output:
+
+Chọn:
+
+○ CRSF
+○ SBUS
+○ PPM
+
+Thông số:
+
+- baudrate
+- frame rate
+- serial pin
+- invert signal
+- output enable
+
+TAB Calibration:
+
+- calibrate joystick
+- center position
+- detect max/min
+- test button
+
+TAB System:
+
+- save config
+- backup config
+- restore config
+- firmware version
+- reboot ESP
+- factory reset
+- OTA update firmware
+
+YÊU CẦU PHẦN MỀM:
+
+Sử dụng:
+
+Firmware:
+- Arduino framework hoặc ESP-IDF
+- FreeRTOS task
+- AsyncWebServer
+- JSON config
+- SPIFFS hoặc LittleFS
+
+Frontend:
+- HTML
+- CSS
+- Javascript
+- WebSocket realtime update
+
+Kiến trúc code:
+
+/src
+/modules
+/web
+/config
+/drivers
+
+Tách riêng:
+
+ps_controller.cpp
+crsf.cpp
+sbus.cpp
+ppm.cpp
+webserver.cpp
+config.cpp
+
+YÊU CẦU HIỆU NĂNG:
+
+Độ trễ mục tiêu:
+
+<20ms
+
+Tần số cập nhật:
+
+50–250Hz
+
+Watchdog:
+
+Có
+
+Reconnect:
+
+Có
+
+Log debug:
+
+Có thể bật/tắt
+
+OTA:
+
+Có
+
+YÊU CẦU ĐẦU RA:
+
+Xuất đầy đủ:
+
+1. Cấu trúc thư mục
+2. Sơ đồ hoạt động
+3. Sơ đồ chân ESP32
+4. Danh sách thư viện cần cài
+5. Mã nguồn hoàn chỉnh
+6. Web UI hoàn chỉnh
+7. Hướng dẫn build bằng PlatformIO
+8. Hướng dẫn nạp firmware
+9. Hướng dẫn kết nối CRSF/SBUS/PPM
+10. Tối ưu RAM và CPU
+
+Code phải đầy đủ và chạy được, không chỉ tạo ví dụ minh họa hoặc pseudo-code.
+QUY TẮC BẮT BUỘC:
+
+- Tập trung viết code thực tế, không giải thích dài dòng.
+- Không tạo nhiều phương án lựa chọn.
+- Không đặt câu hỏi xác nhận giữa chừng.
+- Không tạo pseudo-code.
+- Không tạo ví dụ minh họa đơn giản.
+- Không chia nhỏ thành nhiều cuộc thảo luận.
+- Nếu thiếu thông tin thì tự đưa ra giả định hợp lý và tiếp tục code.
+- Luôn ưu tiên tạo mã nguồn hoàn chỉnh có thể build được.
+- Trả về trực tiếp file code hoàn chỉnh.
+- Chỉ giải thích ngắn gọn khi thực sự cần.
+- Mỗi lần phản hồi hãy tiếp tục dự án thay vì lặp lại nội dung cũ.
+- Không thay đổi kiến trúc đã tạo trước đó.
+- Giữ trạng thái dự án xuyên suốt.
+- Khi sửa lỗi chỉ trả về file hoặc đoạn code cần sửa.
+- Không viết lại toàn bộ dự án nếu không cần.
+- Không sử dụng placeholder như:
+    // TODO
+    // Add code here
+    // Implement later
+- Tất cả chức năng phải được triển khai đầy đủ.
+- Ưu tiên code tối ưu RAM và CPU cho ESP32.
+- Ưu tiên tính ổn định hơn tính năng phụ.
+- Đầu ra phải là code trước, giải thích sau.
+Act as a senior embedded engineer working on a real production project. Behave like a teammate writing production-ready code, not a tutor.

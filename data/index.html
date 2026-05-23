@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32-RC-Joystick Controller</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>ESP32-RC-Joystick</h1>
+                <span class="version" id="firmwareVersion">v1.0.0</span>
+            </div>
+            <div class="connection-status">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Connecting...</span>
+            </div>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+            <button class="tab-btn" data-tab="channels">Channel Monitor</button>
+            <button class="tab-btn" data-tab="mapping">Mapping</button>
+            <button class="tab-btn" data-tab="output">Output</button>
+            <button class="tab-btn" data-tab="calibration">Calibration</button>
+            <button class="tab-btn" data-tab="system">System</button>
+        </nav>
+
+        <main class="content">
+            <!-- DASHBOARD TAB -->
+            <section id="dashboard" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div class="card controller-card">
+                        <h3>Controller Status</h3>
+                        <div class="status-grid">
+                            <div class="status-item">
+                                <label>Connection</label>
+                                <span id="ctrlConnected" class="value error">Disconnected</span>
+                            </div>
+                            <div class="status-item">
+                                <label>Type</label>
+                                <span id="ctrlType" class="value">-</span>
+                            </div>
+                            <div class="status-item">
+                                <label>Battery</label>
+                                <div class="battery-container">
+                                    <div class="battery-bar" id="batteryBar"></div>
+                                    <span id="batteryLevel">-</span>
+                                </div>
+                            </div>
+                            <div class="status-item">
+                                <label>RSSI</label>
+                                <span id="rssiValue" class="value">- dBm</span>
+                            </div>
+                            <div class="status-item">
+                                <label>Uptime</label>
+                                <span id="uptimeValue" class="value">0:00:00</span>
+                            </div>
+                            <div class="status-item">
+                                <label>Signal</label>
+                                <div class="signal-bars" id="signalBars">
+                                    <span class="bar"></span>
+                                    <span class="bar"></span>
+                                    <span class="bar"></span>
+                                    <span class="bar off"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card system-card">
+                        <h3>System Resources</h3>
+                        <div class="status-grid">
+                            <div class="status-item">
+                                <label>CPU Frequency</label>
+                                <span id="cpuFreq" class="value">- MHz</span>
+                            </div>
+                            <div class="status-item">
+                                <label>Free Heap</label>
+                                <span id="freeHeap" class="value">- KB</span>
+                            </div>
+                            <div class="status-item">
+                                <label>Min Free Heap</label>
+                                <span id="minFreeHeap" class="value">- KB</span>
+                            </div>
+                            <div class="status-item">
+                                <label>WiFi RSSI</label>
+                                <span id="wifiRssi" class="value">- dBm</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card protocol-card">
+                        <h3>RC Protocol Status</h3>
+                        <div class="protocol-list">
+                            <div class="protocol-item" id="crsfStatus">
+                                <span class="proto-name">CRSF</span>
+                                <span class="proto-status off">Disabled</span>
+                                <span class="proto-fps" id="crsfFps">0 Hz</span>
+                                <span class="proto-frames" id="crsfFrames">0 frames</span>
+                            </div>
+                            <div class="protocol-item" id="sbusStatus">
+                                <span class="proto-name">SBUS</span>
+                                <span class="proto-status off">Disabled</span>
+                                <span class="proto-fps" id="sbusFps">0 Hz</span>
+                                <span class="proto-frames" id="sbusFrames">0 frames</span>
+                            </div>
+                            <div class="protocol-item" id="ppmStatus">
+                                <span class="proto-name">PPM</span>
+                                <span class="proto-status off">Disabled</span>
+                                <span class="proto-fps" id="ppmFps">0 Hz</span>
+                                <span class="proto-frames" id="ppmFrames">0 frames</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card stats-card">
+                        <h3>Performance</h3>
+                        <div class="perf-bars">
+                            <div class="perf-item">
+                                <label>Loop Rate</label>
+                                <div class="perf-bar">
+                                    <div class="perf-fill" id="loopRateBar" style="width: 50%"></div>
+                                </div>
+                                <span id="loopRateValue">0 Hz</span>
+                            </div>
+                            <div class="perf-item">
+                                <label>Update Rate</label>
+                                <div class="perf-bar">
+                                    <div class="perf-fill" id="updateRateBar" style="width: 50%"></div>
+                                </div>
+                                <span id="updateRateValue">0 Hz</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card joystick-card">
+                        <h3>Virtual Joystick</h3>
+                        <div class="joystick-container">
+                            <div class="joystick left">
+                                <div class="joystick-bg">
+                                    <div class="joystick-stick" id="leftStick"></div>
+                                </div>
+                                <label>Left Stick</label>
+                            </div>
+                            <div class="joystick right">
+                                <div class="joystick-bg">
+                                    <div class="joystick-stick" id="rightStick"></div>
+                                </div>
+                                <label>Right Stick</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CHANNEL MONITOR TAB -->
+            <section id="channels" class="tab-content">
+                <div class="card channel-monitor">
+                    <h3>Channel Monitor</h3>
+                    <div class="channel-count">
+                        <label>Channels:</label>
+                        <select id="channelCountSelect">
+                            <option value="8">8</option>
+                            <option value="12">12</option>
+                            <option value="16" selected>16</option>
+                            <option value="24">24</option>
+                        </select>
+                    </div>
+                    <div class="channel-grid" id="channelGrid">
+                        <!-- Channels will be generated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- MAPPING TAB -->
+            <section id="mapping" class="tab-content">
+                <div class="card mapping-card">
+                    <h3>Channel Mapping</h3>
+                    <div class="mapping-controls">
+                        <select id="mappingChannel">
+                            <!-- Options generated by JS -->
+                        </select>
+                        <button class="btn btn-secondary" id="copyChannelBtn">Copy Channel</button>
+                        <button class="btn btn-secondary" id="pasteChannelBtn">Paste Channel</button>
+                        <button class="btn btn-danger" id="resetChannelBtn">Reset</button>
+                    </div>
+                    <div class="mapping-grid" id="mappingGrid">
+                        <!-- Channel config generated by JS -->
+                    </div>
+                    <div class="mapping-presets">
+                        <h4>Presets</h4>
+                        <button class="btn btn-secondary" id="presetAirplane">Airplane</button>
+                        <button class="btn btn-secondary" id="presetDrone">Drone</button>
+                        <button class="btn btn-secondary" id="presetCar">Car</button>
+                        <button class="btn btn-secondary" id="presetBoat">Boat</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- OUTPUT TAB -->
+            <section id="output" class="tab-content">
+                <div class="output-grid">
+                    <div class="card protocol-config-card">
+                        <h3>Protocol Selection</h3>
+                        <div class="protocol-options">
+                            <label class="radio-card">
+                                <input type="radio" name="protocol" value="crsf" id="protoCrsf">
+                                <span class="radio-content">
+                                    <span class="radio-title">CRSF (Crossfire)</span>
+                                    <span class="radio-desc">High-speed serial protocol for TBS Crossfire</span>
+                                </span>
+                            </label>
+                            <label class="radio-card">
+                                <input type="radio" name="protocol" value="sbus" id="protoSbus">
+                                <span class="radio-content">
+                                    <span class="radio-title">SBUS</span>
+                                    <span class="radio-desc">Serial protocol for Futaba receivers</span>
+                                </span>
+                            </label>
+                            <label class="radio-card">
+                                <input type="radio" name="protocol" value="ppm" id="protoPpm">
+                                <span class="radio-content">
+                                    <span class="radio-title">PPM</span>
+                                    <span class="radio-desc">Pulse Position Modulation</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="card crsf-config-card">
+                        <h3>CRSF Configuration</h3>
+                        <div class="config-form">
+                            <div class="form-group">
+                                <label>Baudrate</label>
+                                <select id="crsfBaudrate">
+                                    <option value="115200">115200</option>
+                                    <option value="400000">400000</option>
+                                    <option value="921600">921600</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Frame Rate</label>
+                                <select id="crsfFrameRate">
+                                    <option value="50">50 Hz</option>
+                                    <option value="100">100 Hz</option>
+                                    <option value="150">150 Hz</option>
+                                    <option value="250">250 Hz</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>TX Pin</label>
+                                <input type="number" id="crsfTxPin" value="43">
+                            </div>
+                            <div class="form-group">
+                                <label>RX Pin</label>
+                                <input type="number" id="crsfRxPin" value="44">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card sbus-config-card" style="display:none;">
+                        <h3>SBUS Configuration</h3>
+                        <div class="config-form">
+                            <div class="form-group">
+                                <label>Baudrate</label>
+                                <select id="sbusBaudrate">
+                                    <option value="100000">100000</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Frame Rate</label>
+                                <select id="sbusFrameRate">
+                                    <option value="50">50 Hz</option>
+                                    <option value="100">100 Hz</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Inverted Signal</label>
+                                <input type="checkbox" id="sbusInverted" checked>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card ppm-config-card" style="display:none;">
+                        <h3>PPM Configuration</h3>
+                        <div class="config-form">
+                            <div class="form-group">
+                                <label>Output Pin</label>
+                                <input type="number" id="ppmPin" value="10">
+                            </div>
+                            <div class="form-group">
+                                <label>Frame Rate</label>
+                                <select id="ppmFrameRate">
+                                    <option value="50">50 Hz</option>
+                                    <option value="100">100 Hz</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Inverted Signal</label>
+                                <input type="checkbox" id="ppmInverted">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CALIBRATION TAB -->
+            <section id="calibration" class="tab-content">
+                <div class="card calibration-card">
+                    <h3>Joystick Calibration</h3>
+                    <div class="calibration-steps">
+                        <div class="step" id="calStep1">
+                            <span class="step-num">1</span>
+                            <div class="step-content">
+                                <h4>Center Position</h4>
+                                <p>Leave all sticks in neutral position</p>
+                                <button class="btn btn-primary" id="calibrateCenter">Calibrate Center</button>
+                            </div>
+                        </div>
+                        <div class="step" id="calStep2">
+                            <span class="step-num">2</span>
+                            <div class="step-content">
+                                <h4>Move Sticks</h4>
+                                <p>Move all sticks to maximum positions</p>
+                                <button class="btn btn-primary" id="calibrateMinMax">Detect Min/Max</button>
+                            </div>
+                        </div>
+                        <div class="step" id="calStep3">
+                            <span class="step-num">3</span>
+                            <div class="step-content">
+                                <h4>Test</h4>
+                                <p>Test the calibration results</p>
+                                <button class="btn btn-primary" id="testCalibration">Test Calibration</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="calibration-preview">
+                        <h4>Preview</h4>
+                        <div class="cal-preview-grid" id="calPreviewGrid">
+                            <!-- Preview generated by JS -->
+                        </div>
+                    </div>
+                    <div class="calibration-actions">
+                        <button class="btn btn-danger" id="resetCalibration">Reset Calibration</button>
+                        <button class="btn btn-success" id="saveCalibration">Save Calibration</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SYSTEM TAB -->
+            <section id="system" class="tab-content">
+                <div class="system-grid">
+                    <div class="card system-info-card">
+                        <h3>System Information</h3>
+                        <div class="info-list">
+                            <div class="info-item">
+                                <label>Firmware Version</label>
+                                <span id="sysFwVersion">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Build Date</label>
+                                <span id="sysBuildDate">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>ESP Chip Model</label>
+                                <span id="sysChipModel">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>ESP Revision</label>
+                                <span id="sysChipRev">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>CPU Cores</label>
+                                <span id="sysCpuCores">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Flash Size</label>
+                                <span id="sysFlashSize">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>PSRAM Size</label>
+                                <span id="sysPsramSize">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card wifi-card">
+                        <h3>WiFi Configuration</h3>
+                        <div class="wifi-form">
+                            <div class="form-group">
+                                <label>SSID</label>
+                                <input type="text" id="wifiSsid" placeholder="Enter WiFi SSID">
+                            </div>
+                            <div class="form-group">
+                                <label>Password</label>
+                                <input type="password" id="wifiPassword" placeholder="Enter WiFi Password">
+                            </div>
+                            <div class="wifi-actions">
+                                <button class="btn btn-primary" id="wifiConnect">Connect</button>
+                                <button class="btn btn-secondary" id="wifiScan">Scan Networks</button>
+                            </div>
+                        </div>
+                        <div class="wifi-networks" id="wifiNetworks">
+                            <!-- Networks populated by JS -->
+                        </div>
+                        <div class="wifi-status" id="wifiStatus">
+                            <!-- Status shown by JS -->
+                        </div>
+                    </div>
+
+                    <div class="card config-card">
+                        <h3>Configuration</h3>
+                        <div class="config-actions">
+                            <button class="btn btn-secondary" id="saveConfigBtn">
+                                <span class="btn-icon">💾</span> Save Configuration
+                            </button>
+                            <button class="btn btn-secondary" id="backupConfigBtn">
+                                <span class="btn-icon">📥</span> Backup Config
+                            </button>
+                            <button class="btn btn-secondary" id="restoreConfigBtn">
+                                <span class="btn-icon">📤</span> Restore Config
+                            </button>
+                        </div>
+                        <input type="file" id="restoreFile" accept=".json" style="display:none;">
+                    </div>
+
+                    <div class="card actions-card">
+                        <h3>System Actions</h3>
+                        <div class="system-actions">
+                            <button class="btn btn-warning" id="rebootBtn">
+                                <span class="btn-icon">🔄</span> Reboot ESP32
+                            </button>
+                            <button class="btn btn-danger" id="factoryResetBtn">
+                                <span class="btn-icon">⚠️</span> Factory Reset
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card ota-card">
+                        <h3>OTA Update</h3>
+                        <div class="ota-form">
+                            <div class="form-group">
+                                <label>Firmware URL</label>
+                                <input type="text" id="otaUrl" placeholder="http://example.com/firmware.bin">
+                            </div>
+                            <button class="btn btn-primary" id="otaUpdateBtn">
+                                <span class="btn-icon">📡</span> Update Firmware
+                            </button>
+                        </div>
+                        <div class="ota-progress" id="otaProgress" style="display:none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="otaProgressFill"></div>
+                            </div>
+                            <span id="otaProgressText">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <span>ESP32-RC-Joystick Controller</span>
+            <span id="connectionInfo">WS: Disconnected</span>
+        </footer>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Confirm Action</h3>
+            <p id="modalMessage">Are you sure?</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="modalCancel">Cancel</button>
+                <button class="btn btn-danger" id="modalConfirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
